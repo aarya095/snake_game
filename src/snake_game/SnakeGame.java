@@ -12,12 +12,12 @@ public class SnakeGame extends JFrame{
 		
 		setLocationRelativeTo(null);
 		setResizable(false);
-		
+		setVisible(true);
 	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		 new SnakeGame().setVisible(true);
+		 new SnakeGame();
 	}
 
 }

@@ -32,6 +32,8 @@ public class Board extends JPanel implements ActionListener{
 	private boolean rightDirection = true;
 	private boolean upDirection = false;
 	private boolean downDirection = false;
+	private int nextDirection = KeyEvent.VK_RIGHT; // Start moving right by default
+
 	
 	private boolean inGame = true;
 	
@@ -74,19 +76,31 @@ public class Board extends JPanel implements ActionListener{
 		
 		locateApple();
 		
-		timer = new Timer(140, this);
+		timer = new Timer(40, this);
 		timer.start();
 	}
 	
 	public void locateApple() {
-		
-		int r = (int)(Math.random() * RANDOM_POSITION);
-		apple_x = r * DOT_SIZE;
-		
-		r = (int)(Math.random() * RANDOM_POSITION);
-		apple_y = r * DOT_SIZE;
-		
+	    boolean validPosition = false;
+	    
+	    while (!validPosition) {
+	        int r = (int)(Math.random() * RANDOM_POSITION);
+	        apple_x = r * DOT_SIZE;
+
+	        r = (int)(Math.random() * RANDOM_POSITION);
+	        apple_y = r * DOT_SIZE;
+
+	        // Check if the apple spawns on the snake's body
+	        validPosition = true;
+	        for (int i = 0; i < dots; i++) {
+	            if (x[i] == apple_x && y[i] == apple_y) {
+	                validPosition = false; // Found a collision with the snake
+	                break;
+	            }
+	        }
+	    }
 	}
+
 	
 	public void paintComponent (Graphics g) {
 		
@@ -127,25 +141,32 @@ public class Board extends JPanel implements ActionListener{
 	}
 	
 	public void move() {
-		for(int i = dots ; i > 0 ; i-- ) {
-			x[i] = x[i - 1];
-			y[i] = y[i - 1];
-		}
-		
-		if (leftDirection) {
-			x[0] = x[0] - DOT_SIZE;
-		} 
-		if (rightDirection) {
-			x[0] = x[0] + DOT_SIZE;
-		} 
-		if (upDirection) {
-			y[0] = y[0] - DOT_SIZE;
-		} 
-		if (downDirection) {
-			y[0] = y[0] + DOT_SIZE;
-		} 
-		
+	    if (inGame) {
+	        // Shift the body segments to the front
+	        for (int i = dots; i > 0; i--) {
+	            x[i] = x[i - 1];
+	            y[i] = y[i - 1];
+	        }
+
+	        // Move the head in the next direction
+	        switch (nextDirection) {
+	            case KeyEvent.VK_LEFT:
+	                x[0] -= DOT_SIZE;
+	                break;
+	            case KeyEvent.VK_RIGHT:
+	                x[0] += DOT_SIZE;
+	                break;
+	            case KeyEvent.VK_UP:
+	                y[0] -= DOT_SIZE;
+	                break;
+	            case KeyEvent.VK_DOWN:
+	                y[0] += DOT_SIZE;
+	                break;
+	        }
+	    }
 	}
+
+
 	
 	public void checkApple() {
 		if ((x[0] == apple_x) && (y[0] == apple_y)) {
@@ -153,73 +174,86 @@ public class Board extends JPanel implements ActionListener{
 			locateApple();
 		}
 	}
+	
 	public void checkCollision() {
-		for(int i = dots; i > 0; i--) {
-			if ( (i > 3) && (x[0] == x[i]) && (y[0] == y[i])) {
-				inGame = false;
-			}
-		}
-	
-		if (y[0] >= 300) {
-			inGame = false;
-		}
-		
-		if (x[0] >= 300) {
-			inGame = false;
-		}
-		
-		if (y[0] < 0) {
-			inGame = false;
-		}
-		
-		if (x[0] < 0) {
-			inGame = false;
-		}
-		
-		if (!inGame) {
-			timer.stop();
-		}
-		
+	    // Check if the head collides with the body
+	    for (int i = 1; i < dots; i++) {
+	        if (x[0] == x[i] && y[0] == y[i]) {
+	            inGame = false; // Collision detected
+	        }
+	    }
+
+	    // Check for wall collisions
+	    if (x[0] >= 300 || x[0] < 0 || y[0] >= 300 || y[0] < 0) {
+	        inGame = false;
+	    }
+
+	    // Stop the timer if the game is over
+	    if (!inGame) {
+	        timer.stop();
+	    }
 	}
+
+
 	
-	public void actionPerformed (ActionEvent ae) {
-		
-		if (inGame) {
-		checkApple();
-		checkCollision();
-		move();
-		}
-		
-		repaint();
-		
+	public void actionPerformed(ActionEvent ae) {
+	    if (inGame) {
+	        // Update the direction before moving
+	        switch (nextDirection) {
+	            case KeyEvent.VK_LEFT:
+	                leftDirection = true;
+	                rightDirection = false;
+	                upDirection = false;
+	                downDirection = false;
+	                break;
+	            case KeyEvent.VK_RIGHT:
+	                rightDirection = true;
+	                leftDirection = false;
+	                upDirection = false;
+	                downDirection = false;
+	                break;
+	            case KeyEvent.VK_UP:
+	                upDirection = true;
+	                downDirection = false;
+	                leftDirection = false;
+	                rightDirection = false;
+	                break;
+	            case KeyEvent.VK_DOWN:
+	                downDirection = true;
+	                upDirection = false;
+	                leftDirection = false;
+	                rightDirection = false;
+	                break;
+	        }
+
+	        checkApple();
+	        checkCollision();
+	        move();
+	    }
+	    repaint();
 	}
+
 	
 	public class TAdapter extends KeyAdapter {
-		
-		public void keyPressed (KeyEvent e) {
-			int key = e.getKeyCode();
-			
-			if(key == KeyEvent.VK_LEFT && (!rightDirection)) {
-				leftDirection = true;
-				upDirection = false;
-				downDirection = false;
-			}
-			if(key == KeyEvent.VK_RIGHT && (!leftDirection)) {
-				rightDirection = true;
-				upDirection = false;
-				downDirection = false;
-			}
-			if(key == KeyEvent.VK_UP && (!downDirection)) {
-				upDirection = true;
-				rightDirection = false;
-				leftDirection = false;
-			}
-			if(key == KeyEvent.VK_DOWN && (!upDirection)) {
-				downDirection = true;
-				rightDirection = false;
-				leftDirection = false;
-			}
-		}
+	    public void keyPressed(KeyEvent e) {
+	        int key = e.getKeyCode();
+
+	        // Set the next direction if it's not the opposite direction
+	        if (key == KeyEvent.VK_LEFT && !rightDirection) {
+	            nextDirection = KeyEvent.VK_LEFT;
+	        }
+	        if (key == KeyEvent.VK_RIGHT && !leftDirection) {
+	            nextDirection = KeyEvent.VK_RIGHT;
+	        }
+	        if (key == KeyEvent.VK_UP && !downDirection) {
+	            nextDirection = KeyEvent.VK_UP;
+	        }
+	        if (key == KeyEvent.VK_DOWN && !upDirection) {
+	            nextDirection = KeyEvent.VK_DOWN;
+	        }
+	    }
 	}
+
+
 
 }
