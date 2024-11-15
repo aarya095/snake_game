@@ -10,6 +10,9 @@ public class SnakeGame extends JFrame{
 		add(new Board());
 		pack(); 
 		
+		ImageIcon icon = new ImageIcon(SnakeGame.class.getResource("/icons/snake1.jpg"));
+        setIconImage(icon.getImage());
+		
 		setLocationRelativeTo(null);
 		setResizable(false);
 		setVisible(true);
