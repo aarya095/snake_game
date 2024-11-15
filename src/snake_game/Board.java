@@ -38,16 +38,52 @@ public class Board extends JPanel implements ActionListener{
 	
 	private int score = 0;
 	
-	Board(){
+	JButton restartbutton;
+	
+	public Board(){
+		
+		
 		
 		addKeyListener(new TAdapter());
 		
-		setBackground(Color.DARK_GRAY);
+		setBackground(Color.blue);
 		setPreferredSize(new Dimension(340,360));
 		setFocusable(true);
 		
 		loadImages();
 		initGame();
+		
+		restartbutton = new JButton("Restart");
+		restartbutton.setBounds(120, 200, 100, 30);
+		restartbutton.setFocusable(false);
+		restartbutton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				restartGame();
+			}
+		});
+		
+	}
+	
+	private void restartGame() {
+		dots = 3;
+		score = 0;
+		inGame = true;
+		
+		for (int i=0; i< dots; i++) {
+			
+			y[i]= 50;
+			x[i]= 50 - (i* DOT_SIZE);
+		
+		}
+		
+		locateApple();
+		
+		nextDirection = KeyEvent.VK_RIGHT;
+		
+		timer.restart();
+		
+		remove(restartbutton);
+		repaint();
 		
 	}
 	
@@ -108,6 +144,12 @@ public class Board extends JPanel implements ActionListener{
 		
 		super.paintComponent(g);
 		
+		g.setColor(Color.darkGray);
+		g.fillRect(0,0,340,360);
+		
+		g.setColor(Color.black);
+		g.fillRect(20,40,300,300);
+		
 		draw(g);
 		
 	}
@@ -149,6 +191,11 @@ public class Board extends JPanel implements ActionListener{
 		g.setColor(Color.WHITE);
 		g.setFont(font);
 		g.drawString(msg, (340 - metrices.stringWidth(msg)) / 2, 360/2);
+		
+		//for restarting the game 
+		if (restartbutton.getParent() == null) {
+			add(restartbutton);
+		}
 	}
 	
 	public void move() {
