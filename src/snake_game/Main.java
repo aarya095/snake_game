@@ -26,7 +26,7 @@ public class Main extends JFrame implements ActionListener{
 		play.addActionListener(this);
 		image.add(play);
 		
-		setSize(512,552);
+		setSize(522,552);
 		setLocationRelativeTo(null);
 		setFocusable(true);
 		setVisible(true);

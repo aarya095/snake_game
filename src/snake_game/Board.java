@@ -18,7 +18,7 @@ public class Board extends JPanel implements ActionListener{
 	
 	private final int  ALL_DOTS = 900;
 	private final int DOT_SIZE = 10;
-	private final int RANDOM_POSITION = 29;
+	private final int RANDOM_POSITION = 28;
 	
 	private int apple_x;
 	private int apple_y;
@@ -34,15 +34,16 @@ public class Board extends JPanel implements ActionListener{
 	private boolean downDirection = false;
 	private int nextDirection = KeyEvent.VK_RIGHT; // Start moving right by default
 
-	
 	private boolean inGame = true;
+	
+	private int score = 0;
 	
 	Board(){
 		
 		addKeyListener(new TAdapter());
 		
-		setBackground(Color.black);
-		setPreferredSize(new Dimension(300,300));
+		setBackground(Color.DARK_GRAY);
+		setPreferredSize(new Dimension(340,360));
 		setFocusable(true);
 		
 		loadImages();
@@ -76,7 +77,7 @@ public class Board extends JPanel implements ActionListener{
 		
 		locateApple();
 		
-		timer = new Timer(40, this);
+		timer = new Timer(120, this);
 		timer.start();
 	}
 	
@@ -85,10 +86,10 @@ public class Board extends JPanel implements ActionListener{
 	    
 	    while (!validPosition) {
 	        int r = (int)(Math.random() * RANDOM_POSITION);
-	        apple_x = r * DOT_SIZE;
+	        apple_x = r * DOT_SIZE + 20; // Offset for left border
 
 	        r = (int)(Math.random() * RANDOM_POSITION);
-	        apple_y = r * DOT_SIZE;
+	        apple_y = r * DOT_SIZE + 40; // Offset for top border
 
 	        // Check if the apple spawns on the snake's body
 	        validPosition = true;
@@ -99,7 +100,8 @@ public class Board extends JPanel implements ActionListener{
 	            }
 	        }
 	    }
-	}
+	    
+	    }
 
 	
 	public void paintComponent (Graphics g) {
@@ -113,6 +115,10 @@ public class Board extends JPanel implements ActionListener{
 	public void draw(Graphics g) {
 		
 		if(inGame) {
+			
+			g.setColor(Color.BLACK);
+			g.drawRect(20, 40, 300, 300);
+			
 			g.drawImage(apple, apple_x,  apple_y, this);
 		
 		for (int i = 0 ; i < dots ; i++) {
@@ -123,6 +129,11 @@ public class Board extends JPanel implements ActionListener{
 				g.drawImage(dot, x[i], y[i], this);
 			}
 		}
+		
+		//Score
+		g.setColor(Color.WHITE);
+		g.setFont(new Font ("SAN SERIF", Font.BOLD, 14));
+		g.drawString("Score: "+ score, getWidth() - 100, 25);
 		
 		Toolkit.getDefaultToolkit().sync();
 		} else {
@@ -137,7 +148,7 @@ public class Board extends JPanel implements ActionListener{
 		
 		g.setColor(Color.WHITE);
 		g.setFont(font);
-		g.drawString(msg, (300 - metrices.stringWidth(msg)) / 2, 300/2);
+		g.drawString(msg, (340 - metrices.stringWidth(msg)) / 2, 360/2);
 	}
 	
 	public void move() {
@@ -169,8 +180,10 @@ public class Board extends JPanel implements ActionListener{
 
 	
 	public void checkApple() {
+		
 		if ((x[0] == apple_x) && (y[0] == apple_y)) {
 			dots++;
+			score += 10; //increases the score each time apple is eaten
 			locateApple();
 		}
 	}
@@ -184,7 +197,7 @@ public class Board extends JPanel implements ActionListener{
 	    }
 
 	    // Check for wall collisions
-	    if (x[0] >= 300 || x[0] < 0 || y[0] >= 300 || y[0] < 0) {
+	    if (x[0] >= 320 || x[0] < 20 || y[0] >= 340 || y[0] < 40) {
 	        inGame = false;
 	    }
 
@@ -238,7 +251,6 @@ public class Board extends JPanel implements ActionListener{
 	    public void keyPressed(KeyEvent e) {
 	        int key = e.getKeyCode();
 
-	        // Set the next direction if it's not the opposite direction
 	        if (key == KeyEvent.VK_LEFT && !rightDirection) {
 	            nextDirection = KeyEvent.VK_LEFT;
 	        }
